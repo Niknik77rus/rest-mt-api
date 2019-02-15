@@ -26,13 +26,15 @@
         $sql = "select * from apicall where approved = 0 order by id";
         $stmt = $pdocon->prepare($sql);
         $stmt->execute();
-    
+        
+        
         //prepare list of GID (binded to routers) for dropdown menu
         $sql1 = "select distinct(groupid) from routers";
         $stmt1 = $pdocon->prepare($sql1);
+        
     
         while ($row= $stmt->fetch(PDO::FETCH_ASSOC)) {
-            echo $row['id'], '  ', $row['uniqueid'], ' ', $row['hostname'],  ' ', $row['mac'],  ' ', $row['windowsuser'],
+            echo $row['ip'] , '  ', $row['uniqueid'], ' ', $row['hostname'],  ' ', $row['mac'],  ' ', $row['windowsuser'],
             "<form action='admin-panel.php' method='post'> <input type='submit' name='uniqueid_id' value='approve' /> ",
             "<select name='gid'>";
 
@@ -50,6 +52,9 @@
         $stmt->execute(array(   
             ':uid' =>  $_POST['uniqueid'],
             ':gid' =>  $_POST['gid']));
+        
+        echo "<meta http-equiv='refresh' content='0'>";
+
         
         require('include/routeros_api.class.php');
         $sql = "select router_ip, router_pwd, router_login from routers where groupid = :gid ";
