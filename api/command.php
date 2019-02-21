@@ -142,4 +142,26 @@ class ApiCall {
     }
     }
     
+    public function ros_check_iplist_entry() {
+        $query = "select router_ip, router_pwd, router_login from routers where groupid = :groupid ";
+        $stmt = $this->conn->prepare($query);
+        $this->uniqueid=htmlspecialchars(strip_tags($this->uniqueid)); 
+        $stmt->bindParam(":groupid", $this->get_groupid());
+        $stmt->execute();        
+        $row = $stmt->fetch();
+        
+        $router_ip = $row['router_ip'];
+        $router_login = $row['router_login'];
+        $router_pwd = $row['router_pwd'];
+        $API = new RouterosAPI();
+        
+        if ($API->connect($router_ip, $router_login, $router_pwd)) {  
+            $ARRAY = $API->comm("/ip/firewall/address-list/print", array(
+                ".proplist" => ".id",
+                "?address" => $this->getRealIp()));  
+        }
+        
+        return count($ARRAY)>0;
+    }
+    
 }

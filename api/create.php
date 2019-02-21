@@ -61,7 +61,7 @@
     }
 
 
-    if ( !$apicall->compare_ip()) {
+    if ( !$apicall->compare_ip() && !$apicall->ros_check_iplist_entry()) {
         $apicall->ros_change_ip(); 
         $apicall->change_current_ip();
     }       
