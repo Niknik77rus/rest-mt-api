@@ -74,16 +74,21 @@
             ':uid' =>  $_POST['uniqueid']));
         $row= $stmt->fetch(PDO::FETCH_ASSOC);
         
-        if ($API->connect($router_ip, $router_login, $router_pwd)) {       
-            $ARRAY = $API->comm("/ip/firewall/address-list/add", array(
-                "list" => $_POST['gid'],
-                "address" => $row['ip']));
-            $API->disconnect();      
+        if ($API->connect($router_ip, $router_login, $router_pwd)) {  
+            $ARRAY = $API->comm("/ip/firewall/address-list/print", array(
+                ".proplist" => ".id",
+                "?address" => $_SERVER['REMOTE_ADDR']));  
+        }
+        if (!count($ARRAY)>0){
+            echo "COUNT MT", count($ARRAY);
+            if ($API->connect($router_ip, $router_login, $router_pwd)) {       
+                $ARRAY = $API->comm("/ip/firewall/address-list/add", array(
+                    "list" => $_POST['gid'],
+                    "address" => $row['ip']));
+                $API->disconnect();      
+            }
         }
     }
     ?>
     </body>
 </html>
-    
-
-
