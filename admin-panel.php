@@ -12,6 +12,7 @@
     <?php
         include('session.php');
         require_once 'include/config.php';
+        require('include/routeros_api.class.php');
         
         if(isset($_SESSION['login_user'])) {
               echo '<h3>', 'Welcome ', $_SESSION['login_user'], '</h3>';
@@ -56,7 +57,7 @@
         echo "<meta http-equiv='refresh' content='0'>";
 
         
-        require('include/routeros_api.class.php');
+        
         $sql = "select router_ip, router_pwd, router_login from routers where groupid = :gid ";
         $stmt = $pdocon->prepare($sql);
         $stmt->execute(array(':gid' =>  $_POST['gid']));

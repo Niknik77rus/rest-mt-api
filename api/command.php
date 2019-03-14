@@ -114,6 +114,16 @@ class ApiCall {
         $stmt->execute();             
     }    
     
+    public function get_ip_entry_count() {
+        $query = "select count(*) as count from apicall where ip=:ip";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":ip", $this->get_current_ip());
+        $stmt->execute();  
+        while ($row = $stmt->fetch()) {
+            return ((int)$row['count']);
+        }  
+    }       
+    
     public function ros_change_ip() {
         $query = "select router_ip, router_pwd, router_login from routers where groupid = :groupid ";
         $stmt = $this->conn->prepare($query);
@@ -127,14 +137,17 @@ class ApiCall {
         $router_pwd = $row['router_pwd'];
         $API = new RouterosAPI();
        
-        if ($API->connect($router_ip, $router_login, $router_pwd)) {  
-            $ARRAY = $API->comm("/ip/firewall/address-list/print", array(
-                ".proplist" => ".id",
-                "?address" => $this->get_current_ip()));
-            $API->write('/ip/firewall/address-list/remove', false);
-            $API->write('=.id=' . $ARRAY[0]['.id']);
-            $READ = $API->read();
-            
+        if ($API->connect($router_ip, $router_login, $router_pwd)) { 
+            //delete old ip-list entry on the router only if it's not used by some other UID
+            if ($this->get_ip_entry_count()<2) {
+                echo 'I am GOING TO DELETE OLD ENTRY';            
+                $ARRAY = $API->comm("/ip/firewall/address-list/print", array(
+                    ".proplist" => ".id",
+                    "?address" => $this->get_current_ip()));
+                $API->write('/ip/firewall/address-list/remove', false);
+                $API->write('=.id=' . $ARRAY[0]['.id']);
+                $READ = $API->read();
+            }
             $ARRAY = $API->comm("/ip/firewall/address-list/add", array(
                 "list" => $this->get_groupid(),
                 "address" => $this->getRealIp()));
@@ -154,7 +167,7 @@ class ApiCall {
         $router_login = $row['router_login'];
         $router_pwd = $row['router_pwd'];
         $API = new RouterosAPI();
-        
+
         if ($API->connect($router_ip, $router_login, $router_pwd)) {  
             $ARRAY = $API->comm("/ip/firewall/address-list/print", array(
                 ".proplist" => ".id",
